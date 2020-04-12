@@ -1,0 +1,134 @@
+
+***********Spring AOP Notes***********
+-> Based on AspectJ
+
+AspectL 
+-> Standrad implemention of crosscutting operations 
+-> AOP is spring omplementation
+
+Advice Type 
+-> Adds extra funtionalities before and after method execution
+-> Add Crosscutting functionalities
+-> Allow us to perform logging, authentication without touching actual bussiness logic 
+-> Allows Sepration of concern 
+
+@Aspect 
+-> Specifies we are performing AOP
+-> Allows use of @Before, @After etc
+@Before  - Method is executed before target method
+eg. @Transactional (beginCommit())
+@AfterReturning - Runs a method after excution of target method
+
+Best Praxtices 
+-> Keep code small 
+-> Fast 
+-> Do not perform any expensive operation 
+-> Get inout as quickly as possible 
+
+Pointcut Expression Language 
+-> Expression where an Advice should be appied
+
+Examples of Expression 
+@Before("execution(public void addAccount())") - Match any method with this name in any class
+@Before("execution(public void com.aop.dao.AccountDao.addAccount())") - Match only one method
+@Before("execution(public void add*())")  - MAtch all methods in all class with name starting from add
+@Before("execution(* * addAccount())") - Match addAccoutn method with any access specifier and return type
+@Before("execution(* addAccount())") - Match any return type, modifier is optional
+@Before("within(*)") - Any method of any class 
+
+within -> All classes isnide a given package (eg. "within(com.cg.*)")
+eg. within(com.cg.*) -> all clases with com.cg 
+eg2. within(com.cg..*) -> All class within com.cg and all subpackes within com.cg
+executiion -> Specifiv return type and method 
+
+PArameter Pattern 
+() -> Method with no argument  
+(*) -> Method with 1 argument 
+(..) -> Method with 0 or more argument
+
+Match any ethod on com.demo.aop.dao package  witih any argument
+@Before("execution(* com.aop.dao.*.*(..))")
+
+Whwn used multiple tmes, we create variable 
+
+@Pointcut 
+TO create a Expression and resuse by calling that pointcut method
+eg. 
+@Pointcut("execution(* com.aop.dao.*.get*(..))")
+public void getterExpression() {}
+	
+@Pointcut("execution(* com.aop.dao.*.set*(..))")
+public void setterExpression() {}
+
+@Pointcut("anyMethodExpression() && !(setterExpression() || getterExpression())")
+public void pointCutMethodExceptGetterAndSetter() {}
+
+//Actual Method
+@Before("pointCutMethodExceptGetterAndSetter()")
+	public void methodForNoGetterSetter() {
+		System.out.println("----------Method with no getter/sette and all other method----------");
+	}
+
+
+@Order 
+-> Used to order the aspects 
+-> Can be positive or negative 
+-> Lower value have higer priority 
+->Not not fololow a consective order
+
+Create difrect aspect classes for better fine grained control
+eg. 
+@Order(1)
+@Aspect
+@Component 
+class Test{
+	@Before("execution(* com.abc.cde.addAccount(..))")
+	public void doSomwthing(){
+		sout("lo");
+	}
+}
+
+
+JointPoint gices info abbout the method being executed 
+
+@AfterReturning 
+-> Own custom code once the method successfully returns a vlue 
+-> This is executed weh no exceotion ocurs
+-> post processing data 
+-> use cases (logging, postprocessing data i.e modifiying return value)
+-> Only Objects can be modified as their references as returned isntead if a copy
+@AfterThrowing(
+	pointcut="execution(* com.package.class.methodName(..))",
+	returning="result"
+)
+
+@AfterThrowing
+-> Used to intercept the thrown excepion 
+-> We dont handle the exception here, instead we just read it
+-> Use cases (logs, audit the exception i.e undertand why it occured, Notify DevOps team via email or SMS)
+@AfterThrowing(
+	pointcut="execution(* com.package.class.methodName(..))",
+	throwing="result"
+)
+
+
+@After 
+-> after method completion 
+-> @AfterThrowing exceues after execption or @AfterReturning executes after gettng return vau 
+-> @After executes in both cases, like finally() , but AFTER above 2 advices
+-> Use case (logging, cleaning resousrces, code to run regardless of outcome)
+-> Cannot access exception as it should run even when there is not exception 
+-> Easiest for logging
+
+@Around 
+-> Runs before/after mthod execution
+-> Combination of @Before ad @After 
+-> uses (Logging, audition, instrumentatio/profiling i.e how long it took to execute a method)
+-> MAage or stop exceptions
+
+ProceedingJoinintPoint 
+-> handle for target method 
+-> Used with @Around 
+-> Can handle xception
+-> Can re throw new exception
+
