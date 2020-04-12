@@ -2,6 +2,18 @@
 ***********Spring AOP Notes***********
 -> Based on AspectJ
 
+
+->Enabling aspectJ usingXML config 
+Add 2 url in schemaLocation
+http://www.springframework.org/schema/aop   
+http://www.springframework.org/schema/aop/spring-aop-3.0.xsd "
+Add this tage to enable proxy
+<aop:aspectj-autoproxy />
+
+-> Enable using JAVA config 
+Add annotation in AppConfig
+@EnableAspectJAutoProxy
+
 AspectL 
 -> Standrad implemention of crosscutting operations 
 -> AOP is spring omplementation
